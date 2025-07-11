@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Shy Lee - Your Indian Replika</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.4/lottie.min.js"></script>
+  <style>
+    body { text-align: center; font-family: Arial, sans-serif; background: #f9f9f9; }
+    #lottie { width: 300px; height: 300px; margin: 20px auto; }
+    button { padding: 12px 25px; font-size: 18px; border: none; border-radius: 5px; background: #4CAF50; color: #fff; cursor: pointer; }
+    button:hover { background: #45a049; }
+    #chat { margin-top: 20px; max-width: 500px; background: #fff; padding: 20px; border-radius: 10px; display: inline-block; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    #messages { min-height: 100px; }
+  </style>
+</head>
+<body>
+  <h1>💙 Shy Lee 💙</h1>
+  <div id="lottie"></div>
+  <div id="chat">
+    <div id="messages"></div>
+    <button onclick="startListening()">🎙️ Talk to Shy Lee</button>
+  </div>
+
+  <script>
+    var animation = lottie.loadAnimation({
+      container: document.getElementById('lottie'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'https://assets10.lottiefiles.com/packages/lf20_x62chJ.json'
+    });
+
+    const messages = document.getElementById('messages');
+
+    window.onload = () => {
+      const welcome = "Hi, I am your Shy Lee";
+      addMessage("👋 Shy Lee: " + welcome);
+      speak(welcome);
+    }
+
+    function startListening() {
+      const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-IN';
+      recognition.start();
+      recognition.onresult = async (event) => {
+        const text = event.results[0][0].transcript;
+        addMessage("🧑 You: " + text);
+        const reply = await getChatbotReply(text);
+        addMessage("🤖 Shy Lee: " + reply);
+        speak(reply);
+      };
+    }
+
+    function addMessage(text) {
+      messages.innerHTML += "<p>" + text + "</p>";
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function getChatbotReply(userInput) {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer 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
+'
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: userInput }]
+        })
+      });
+      const data = await response.json();
+      return data.choices[0].message.content;
+    }
+
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-IN';
+      utterance.voice = speechSynthesis.getVoices().find(voice => voice.lang.includes('en-IN')) || null;
+      speechSynthesis.speak(utterance);
+    }
+  </script>
+</body>
+</html>
